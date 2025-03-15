@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 using SpaceSim;
+using System.Windows.Forms;
 
-namespace SpaceSim
+namespace SolarSystemApp
 {
-    public class Mainprog
+    static class Program
     {
+        [STAThread]
         static void Main()
         {
             Star sun = new Star("Sun", "Yellow", 0, 696342, 24.5);
@@ -46,48 +44,10 @@ namespace SpaceSim
                 uranus, oberon, titania, umbriel,
                 neptune, triton
             };
-
-            // Be brukeren om input
-            Console.WriteLine("Enter the number of days you want to simulate:");
-            if (!double.TryParse(Console.ReadLine(), out double time))
-            {
-                Console.WriteLine("Invalid input, using time = 0.");
-                time = 0;
-            }
-
-            Console.WriteLine("What planet would you like to look at?");
-            string inputName = Console.ReadLine().Trim();
-
-
-            SpaceObject selectedObject = solarSystem.FirstOrDefault(obj => obj.GetName().Equals(inputName, StringComparison.OrdinalIgnoreCase)) ?? sun;
-
-
-            Console.WriteLine($"\nDetails of {selectedObject.GetName()}:");
-            Console.WriteLine($"Color: {selectedObject.GetColor()}");
-            Console.WriteLine($"Orbital Radius: {selectedObject.GetOrbRadius()} km");
-            Console.WriteLine($"Orbital Period: {selectedObject.GetOrbPeriod()} days");
-            Console.WriteLine($"Rotation Period: {selectedObject.GetRotPeriod()} days");
-
-
-            var (x, y) = selectedObject.CalcPos(time);
-            Console.WriteLine($"Position after {time} days: ({x:F2}, {y:F2})");
-
-
-            var moons = solarSystem.OfType<Moon>().Where(m => m.GetOrbObject() == selectedObject).ToList();
-
-            if (moons.Any())
-            {
-                Console.WriteLine("\nMoons:");
-
-                foreach (var moonObj in moons)
-                {
-                    var (mx, my) = moonObj.CalcPos(time);
-                    Console.WriteLine($"- {moonObj.GetName()} at ({mx:F2}, {my:F2})");
-                }
-            }
-
-            Console.ReadLine();
-            
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1(solarSystem));
         }
     }
 }

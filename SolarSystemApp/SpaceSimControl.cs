@@ -1,33 +1,33 @@
 using System.Windows.Forms;
 using System.Drawing;
 using SpaceSim;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using System.Drawing.Text;
-using System.Xml.Serialization;
 
 namespace SolarSystemApp
 {
     public class SpaceSimControl : Control
     {
-        public string SelectedObject { get; set; }
+        public string SelectedObject = "The Sun";
         List<SpaceObject> solarSystem;
+
+        public SpaceSimControl(List<SpaceObject> solarSystem)
+        {
+            this.solarSystem = solarSystem;
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
+            System.Diagnostics.Debug.WriteLine("OnPaint");
             DrawPlantes(e.Graphics, 0);
         }
-        readonly Brush yellow = new SolidBrush(Color.FromName("yellow"));
-      
-        readonly Brush gray = new SolidBrush(Color.Gray);
-        readonly Brush brown = new SolidBrush(Color.Brown);
-        readonly Brush blue = new SolidBrush(Color.Blue);
-        readonly Brush red = new SolidBrush(Color.Red);
-        readonly Brush orange = new SolidBrush(Color.Orange);
-        readonly Brush white = new SolidBrush(Color.White);
-        
+
         private void DrawPlantes(Graphics g, double t)
         {
+            System.Diagnostics.Debug.WriteLine("DrawPlantes");
             var sun = solarSystem.Find(obj => obj.Name == "Sun");
             var mercury = solarSystem.Find(obj => obj.Name == "Mercury");
             var venus = solarSystem.Find(obj => obj.Name == "Venus");
@@ -37,59 +37,78 @@ namespace SolarSystemApp
             var saturn = solarSystem.Find(obj => obj.Name == "Saturn");
             var uranus = solarSystem.Find(obj => obj.Name == "Uranus");
             var neptune = solarSystem.Find(obj => obj.Name == "Neptune");
+
             if (SelectedObject == "The Sun")
             {
-                DrawPlanet(g, sun, t);
-                DrawPlanet(g, mercury, t);
-                DrawPlanet(g, venus, t);
-                DrawPlanet(g, earth, t);
-                DrawPlanet(g, mars, t);
-                DrawPlanet(g, jupiter, t);
-                DrawPlanet(g, saturn, t);
-                DrawPlanet(g, uranus, t);
-                DrawPlanet(g, neptune, t);
-            }else if (SelectedObject == "Mercury")
+                
+                if (sun != null) DrawPlanet(g, sun, t);
+                if (mercury != null) DrawPlanet(g, mercury, t);
+                if (venus != null) DrawPlanet(g, venus, t);
+                if (earth != null) DrawPlanet(g, earth, t);
+                if (mars != null) DrawPlanet(g, mars, t);
+                if (jupiter != null) DrawPlanet(g, jupiter, t);
+                if (saturn != null) DrawPlanet(g, saturn, t);
+                if (uranus != null) DrawPlanet(g, uranus, t);
+                if (neptune != null) DrawPlanet(g, neptune, t);
+            }
+            else
             {
-                DrawPlanet(g, mercury, t);
+                var selected = solarSystem.Find(obj => obj.Name == SelectedObject);
+                if (selected != null)
+                {
+                    var moons = solarSystem.OfType<Moon>().Where(moon => moon.OrbObject == selected);
+                    DrawPlanet(g, selected, t);
+                    foreach (var moon in moons)
+                    {
+                        DrawPlanet(g, moon, t);
+                    }
+                }
+            }
+        }
 
-            };
         private void DrawPlanet(Graphics g, SpaceObject obj, double t)
         {
+            System.Diagnostics.Debug.WriteLine("DrawPlanet");
             Brush color = new SolidBrush(Color.FromName(obj.GetColor()));
-            
-            double centerX = 960;
-            double centerY = 540;
+
+            double centerX = Width / 2;
+            double centerY = Height / 2;
             (double x, double y, double r) = calcRelativePos(obj, t);
 
-
-            g.FillEllipse(color, (float)x + (float)centerX, (float)y+ (float) centerY, (float)r, (float)r);
+            System.Diagnostics.Debug.WriteLine($"x: {x}, y: {y}, r: {r}");
+            g.FillEllipse(color, (float)(x + centerX - r / 2), (float)(y + centerY - r / 2), (float)r, (float)r);
             color.Dispose();
         }
-        private (double x, double y, double r) calcRelativePos(SpaceObject obj, double t) 
+
+        private (double x, double y, double r) calcRelativePos(SpaceObject obj, double t)
         {
-            (double xT, double yT ) = obj.CalcPos(t);
+            (double xT, double yT) = obj.CalcPos(t);
             double x = xT * CalculateDistanceScale();
             double y = yT * CalculateDistanceScale();
             double r = obj.ObjRadius * CalculateSizeScale();
             return (x, y, r);
         }
+
         private double CalculateSizeScale()
         {
-            
-            var sun = solarSystem.Find(obj => obj.Name == "Sun");
-            double maxObjectRadius = sun.ObjRadius;
-
-            // Scale to fit within a reasonable size on the screen (e.g., 50 pixels)
-            return 50 / maxObjectRadius;
+            var sun = solarSystem.Find(obj => obj.Name == "The Sun");
+            if (sun != null)
+            {
+                double maxObjectRadius = sun.ObjRadius;
+                return 0.01 / maxObjectRadius;
+            }
+            return 1;
         }
+
         private double CalculateDistanceScale()
         {
-            // Assuming the maximum orbital radius is that of Neptune
             var neptune = solarSystem.Find(obj => obj.Name == "Neptune");
-            double maxOrbitalRadius = neptune.OrbRadius;
-
-            // Scale to fit within half the width of the screen (960 pixels)
-            return 960 / maxOrbitalRadius;
+            if (neptune != null)
+            {
+                double maxOrbitalRadius = neptune.OrbRadius;
+                return Math.Min(Width, Height) / 1000 / maxOrbitalRadius;
+            }
+            return 1;
         }
     }
 }

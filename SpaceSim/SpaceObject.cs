@@ -25,6 +25,7 @@ namespace SpaceSim
         public SpaceObject(
             String name,
             String color
+           
             )
         {
             Name = name;
