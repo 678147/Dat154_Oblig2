@@ -36,8 +36,8 @@ namespace SolarSystemApp
         {
             if (simControl != null)
             {
-                simControl.ShowInfo = checkBoxShowInfo.Checked;
-                simControl.Invalidate();
+                simContol.ShowInfo = checkBoxShowInfo.Checked;
+                simContol.Invalidate();
             }
         }
 

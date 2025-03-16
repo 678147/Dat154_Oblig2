@@ -101,6 +101,19 @@ namespace SolarSystemApp
 
             // Draw the planet
             g.FillEllipse(color, (float)(centerX - planetRadius / 2), (float)(centerY - planetRadius / 2), (float)planetRadius, (float)planetRadius);
+
+            if (ShowLabels)
+            {
+                Font font = new Font("Arial", 24, FontStyle.Bold);
+                Brush textColor = Brushes.Black;
+                string planetName = obj.Name;
+                SizeF textSize = g.MeasureString(planetName, font);
+                float textX = (float)(centerX - textSize.Width / 2);
+                float textY = (float)(centerY - planetRadius / 2 - textSize.Height - 10);
+                g.DrawString(planetName, font, textColor, textX, textY);
+                font.Dispose();
+            }
+
             var moons = solarSystem.Where(m => m.OrbObject == obj).ToList();
             if (moons.Count > 0)
             {
@@ -135,13 +148,14 @@ namespace SolarSystemApp
                 Brush moonColor = new SolidBrush(Color.FromName(moon.GetColor()));
 
                 g.FillEllipse(moonColor, (float)(moonX - moonSize / 2), (float)(moonY - moonSize / 2), (float)moonSize, (float)moonSize);
-
-                string moonName = moon.Name;
-                SizeF textSize = g.MeasureString(moonName, font);
-                float textX = (float)(moonX - textSize.Width / 2);
-                float textY = (float)(moonY - moonSize / 2 - textSize.Height);
-                g.DrawString(moonName, font, textColor, textX, textY);
-
+                if (ShowLabels)
+                {
+                    string moonName = moon.Name;
+                    SizeF textSize = g.MeasureString(moonName, font);
+                    float textX = (float)(moonX - textSize.Width / 2);
+                    float textY = (float)(moonY - moonSize / 2 - textSize.Height);
+                    g.DrawString(moonName, font, textColor, textX, textY);
+                }
                 moonColor.Dispose();
             }
             font.Dispose();
