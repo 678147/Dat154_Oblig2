@@ -9,6 +9,11 @@ namespace SolarSystemApp
         [STAThread]
         static void Main()
         {
+
+            EventController controller = new EventController(10);
+         
+
+
             Star sun = new Star("Sun", "Yellow", 0, 696342, 24.5);
             Planet mercury = new Planet("Mercury", "gray", 57909227, 2439.5, 87.97, 176);
             Planet venus = new Planet("Venus", "brown", 108209475, 6052, 224.7, 243);
@@ -44,10 +49,16 @@ namespace SolarSystemApp
                 uranus, oberon, titania, umbriel,
                 neptune, triton
             };
+            
+           
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1(solarSystem));
+            SpaceSimContol simContol = new SpaceSimContol(solarSystem, controller);
+            Application.Run(new Form1(solarSystem, controller));
+            
+            controller.Start();
+       
         }
     }
 }

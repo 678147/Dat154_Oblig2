@@ -8,25 +8,35 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace SolarSystemApp
 {
-    public class SpaceSimControl : Control
+    public class SpaceSimContol : Control
     {
         public string SelectedObject = "The Sun";
         public bool ShowLabels = false;
-        public bool ShowInfo = false;    
+        public bool ShowInfo = false;
         List<SpaceObject> solarSystem;
+        private EventController eventController;
 
-        public SpaceSimControl(List<SpaceObject> solarSystem)
+        public SpaceSimContol(List<SpaceObject> solarSystem, EventController eventController)
         {
             this.solarSystem = solarSystem;
+            this.eventController = eventController;
+            this.eventController.DoTick += OnTick;
+        }
+
+        private void OnTick(object? sender, EventArgs e)
+        {
+            Invalidate();
+          
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
+            double elapsedTime = eventController.GetElapsedTime();
             System.Diagnostics.Debug.WriteLine("OnPaint");
 
 
-            DrawPlantes(e.Graphics, 0);
+            DrawPlantes(e.Graphics, elapsedTime);
             if (ShowInfo)
             {
                 DrawInfoSquare(e.Graphics);
@@ -42,22 +52,22 @@ namespace SolarSystemApp
 
             if (zoomMode)
             {
-                DrawZoomedPlanet(g, selectedPlanet);
+                DrawZoomedPlanet(g, selectedPlanet, t);
             }
             else
             {
                 var planets = new List<SpaceObject>
-        {
-            solarSystem.Find(obj => obj.Name == "Sun"),
-            solarSystem.Find(obj => obj.Name == "Mercury"),
-            solarSystem.Find(obj => obj.Name == "Venus"),
-            solarSystem.Find(obj => obj.Name == "Earth"),
-            solarSystem.Find(obj => obj.Name == "Mars"),
-            solarSystem.Find(obj => obj.Name == "Jupiter"),
-            solarSystem.Find(obj => obj.Name == "Saturn"),
-            solarSystem.Find(obj => obj.Name == "Uranus"),
-            solarSystem.Find(obj => obj.Name == "Neptune")
-        };
+            {
+                solarSystem.Find(obj => obj.Name == "Sun"),
+                solarSystem.Find(obj => obj.Name == "Mercury"),
+                solarSystem.Find(obj => obj.Name == "Venus"),
+                solarSystem.Find(obj => obj.Name == "Earth"),
+                solarSystem.Find(obj => obj.Name == "Mars"),
+                solarSystem.Find(obj => obj.Name == "Jupiter"),
+                solarSystem.Find(obj => obj.Name == "Saturn"),
+                solarSystem.Find(obj => obj.Name == "Uranus"),
+                solarSystem.Find(obj => obj.Name == "Neptune")
+            };
 
                 int totalPlanets = planets.Count;
                 double[] radii = new double[totalPlanets];
@@ -79,17 +89,16 @@ namespace SolarSystemApp
             }
         }
 
-        private void DrawZoomedPlanet(Graphics g, SpaceObject obj)
+        private void DrawZoomedPlanet(Graphics g, SpaceObject obj, double t)
         {
             Brush color = new SolidBrush(Color.FromName(obj.GetColor()));
 
             double centerX = 960;
             double centerY = 540;
-            double planetRadius = 500;  
+            double planetRadius = 500;
 
             // Draw the planet
             g.FillEllipse(color, (float)(centerX - planetRadius / 2), (float)(centerY - planetRadius / 2), (float)planetRadius, (float)planetRadius);
-
             var moons = solarSystem.Where(m => m.OrbObject == obj).ToList();
             if (moons.Count > 0)
             {
@@ -101,8 +110,8 @@ namespace SolarSystemApp
 
         private void DrawMoons(Graphics g, double centerX, double centerY, double planetRadius, List<SpaceObject> moons)
         {
-            double moonOrbitRadius = planetRadius * 1.5; 
-            double angleStep = 2 * Math.PI / moons.Count; 
+            double moonOrbitRadius = planetRadius * 1.5;
+            double angleStep = 2 * Math.PI / moons.Count;
 
             Font font = new Font("Arial", 12, FontStyle.Bold);
             Brush textColor = Brushes.Black;
@@ -111,7 +120,7 @@ namespace SolarSystemApp
             {
                 SpaceObject moon = moons[i];
 
-                double moonSize = planetRadius / (moon.ObjRadius / 1.0); 
+                double moonSize = planetRadius / (moon.ObjRadius / 1.0);
                 if (moonSize < 10)
                 {
                     moonSize = 10;
@@ -148,10 +157,15 @@ namespace SolarSystemApp
 
             System.Diagnostics.Debug.WriteLine($"Drawing: {obj.Name} at ({x}, {y}) with radius {r}");
 
-            double maxSize = 150; 
+            double maxSize = 200;
+            double minSize = 10;
             if (r > maxSize)
             {
                 r = maxSize;
+            }
+            else if (r < minSize)
+            {
+                r = minSize;
             }
 
             System.Diagnostics.Debug.WriteLine($"x: {x}, y: {y}, r: {r}");
@@ -205,10 +219,10 @@ namespace SolarSystemApp
         private (double x, double y, double r) calcRelativePos(SpaceObject obj, double t, int index, int totalPlanets, double[] radii)
         {
             double scaleSize = CalculateSizeScale();
-            double r = (obj.ObjRadius * scaleSize) / 150;
+            double r = (obj.ObjRadius * scaleSize) / 1000;
 
-            double centerX = 1920 / 2;
-            double centerY =  -250;
+            double centerX = 1980 / 2;
+            double centerY = -250;
 
             if (obj.Name == "Sun")
             {
@@ -217,17 +231,17 @@ namespace SolarSystemApp
 
             double maxOrbitalRadius = solarSystem.Max(p => p.OrbRadius);
             double maxScreenRadius = Math.Min(1920, 1080) * 0.3;
-            double distanceScale = maxScreenRadius / maxOrbitalRadius;
+            double distanceScale = maxScreenRadius / maxOrbitalRadius / 4;
             double adjustedOrbRadius = obj.OrbRadius * distanceScale;
-            double minSpacing = 20; 
+            double minSpacing = 20;
             double maxSpacing = 200;
 
-            adjustedOrbRadius += Math.Min(adjustedOrbRadius, maxSpacing);   
+            adjustedOrbRadius += Math.Min(adjustedOrbRadius, maxSpacing);
             adjustedOrbRadius += minSpacing * index;
 
             if (adjustedOrbRadius < (maxOrbitalRadius * 0.2))
             {
-                adjustedOrbRadius *= 2.5; 
+                adjustedOrbRadius *= 2.5;
             }
 
             double angle = (t / obj.OrbPeriod) * 2 * Math.PI;
@@ -236,11 +250,6 @@ namespace SolarSystemApp
 
             return (x, y, r);
         }
-
-
-
-
-
 
         private double CalculateSizeScale()
         {

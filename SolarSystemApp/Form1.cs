@@ -5,11 +5,16 @@ namespace SolarSystemApp
     public partial class Form1 : Form
     {
         private List<SpaceObject> solarSystem;
+        private EventController eventController;
+        private SpaceSimContol simControl;
 
-        public Form1(List<SpaceObject> solarSystem)
+        public Form1(List<SpaceObject> solarSystem, EventController eventController)
         {
+            this.eventController = eventController;
             this.solarSystem = solarSystem;
+            this.simControl = new SpaceSimContol(solarSystem, eventController);
             InitializeComponent();
+            this.eventController.Start();
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -17,36 +22,36 @@ namespace SolarSystemApp
             if (comboBox1?.SelectedItem != null)
             {
                 string selectedObject = comboBox1.SelectedItem.ToString();
-                if (spaceSimControl != null)
+                if (simContol != null)
                 {
-                    spaceSimControl.SelectedObject = selectedObject;
-                    spaceSimControl.Invalidate();
+                    simContol.SelectedObject = selectedObject;
+                    simContol.Invalidate();
                 }
             }
         }
 
         private void checkBoxShowInfo_CheckedChanged(object sender, EventArgs e)
         {
-            if (spaceSimControl != null)
+            if (simControl != null)
             {
-                spaceSimControl.ShowInfo = checkBoxShowInfo.Checked;
-                spaceSimControl.Invalidate();
+                simControl.ShowInfo = checkBoxShowInfo.Checked;
+                simControl.Invalidate();
             }
         }
 
         private void checkBoxShowLabels_CheckedChanged(object sender, EventArgs e)
         {
-            if (spaceSimControl != null)
+            if (simContol != null)
             {
-                spaceSimControl.ShowLabels = checkBoxShowLabels.Checked;
-                spaceSimControl.Invalidate();
+                simContol.ShowLabels = checkBoxShowLabels.Checked;
+                simContol.Invalidate();
             }
         }
 
         private void InitializeComponent()
         {
             this.comboBox1 = new ComboBox();
-            this.spaceSimControl = new SpaceSimControl(solarSystem);
+            this.simContol = new SpaceSimContol(solarSystem, eventController);
             this.checkBoxShowInfo = new CheckBox();
             this.checkBoxShowLabels = new CheckBox();
             this.SuspendLayout();
@@ -68,10 +73,10 @@ namespace SolarSystemApp
             this.comboBox1.TabIndex = 0;
             this.comboBox1.SelectedIndexChanged += this.comboBox1_SelectedIndexChanged;
 
-            this.spaceSimControl.Location = new Point(12, 50);
-            this.spaceSimControl.Name = "spaceSimControl";
-            this.spaceSimControl.Size = new Size(1920, 1080);
-            this.spaceSimControl.TabIndex = 1;
+            this.simContol.Location = new Point(12, 50);
+            this.simContol.Name = "simContol";
+            this.simContol.Size = new Size(1920, 1080);
+            this.simContol.TabIndex = 1;
 
             this.checkBoxShowInfo.Location = new Point(300, 12);
             this.checkBoxShowInfo.Name = "checkBoxShowInfo";
@@ -90,7 +95,7 @@ namespace SolarSystemApp
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.ClientSize = new Size(1980, 1080);
-            this.Controls.Add(this.spaceSimControl);
+            this.Controls.Add(this.simContol);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.checkBoxShowInfo);
             this.Controls.Add(this.checkBoxShowLabels); // Ensure this line is present

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Data;
+using SpaceSim;
+
 
 namespace SpaceSim
 {
@@ -14,6 +16,10 @@ namespace SpaceSim
         public double Width { get; set; }
         public String Color { get; set; }
 
+        public double X { get; set; }
+        public double Y { get; set; }
+
+        private double currentAngle = 0;
 
         private Planet _orbObject;
         public Planet OrbObject
@@ -25,11 +31,26 @@ namespace SpaceSim
         public SpaceObject(
             String name,
             String color
-           
             )
         {
             Name = name;
             Color = color;
+        }
+        public void SubscribeToTick(EventController controller)
+        {
+            controller.DoTick += UpdatePosition;
+        }
+        private void UpdatePosition(object sender, EventArgs e)
+        {
+            double angleIncrement = (2 * Math.PI) / OrbPeriod;
+            currentAngle += angleIncrement;
+            if (currentAngle >= 2 * Math.PI)
+            {
+                currentAngle -= 2 * Math.PI;
+            }
+
+            X = OrbRadius * Math.Cos(currentAngle);
+            Y = OrbRadius * Math.Sin(currentAngle);
         }
         public virtual void Draw()
         {
@@ -103,6 +124,8 @@ namespace SpaceSim
             OrbRadius = orbRadius;
             ObjRadius = objRadius;
             RotPeriod = rotPeriod;
+            X = OrbRadius;
+            Y = 0;
         }
         public override void Draw()
         {
@@ -132,6 +155,8 @@ namespace SpaceSim
                 )
         {
             OrbObject = orbObject;
+            X = OrbRadius + orbObject.X;
+            Y = orbObject.Y;
         }
         public override void Draw()
         {
