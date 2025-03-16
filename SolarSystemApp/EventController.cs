@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace SolarSystemApp
@@ -11,37 +7,40 @@ namespace SolarSystemApp
     {
         private System.Timers.Timer timer;
         public event EventHandler DoTick;
-        private double tEvent;
         private double elapsedTime;
-        
-        public EventController(double tEvent)
+        private double currentSpeed; 
+        private const double minSpeed = 10;  
+        private const double maxSpeed = 5000; 
+        private const double speedStep = 10;  
+
+        public EventController(double initialSpeed)
         {
-            this.tEvent = tEvent;
-            timer = new System.Timers.Timer(tEvent);
+            this.currentSpeed = initialSpeed;
+            timer = new System.Timers.Timer(currentSpeed);
             timer.Elapsed += OnTimedEvent;
             elapsedTime = 0;
         }
 
-        public void Start()
+        public void Start() => timer.Start();
+        public void Stop() => timer.Stop();
+
+        public void SetSpeed(bool increase)
         {
-            timer.Start();
+            if (increase)
+                currentSpeed = Math.Max(minSpeed, currentSpeed - speedStep); 
+            else
+                currentSpeed = Math.Min(maxSpeed, currentSpeed + speedStep); 
+
+            timer.Interval = currentSpeed;
+            Console.WriteLine($"New Speed: {currentSpeed}ms per tick"); 
         }
-        public void Stop()
-        {
-            timer.Stop();
-        }
-        public void SetSpeed(double speed) 
-        {
-            timer.Interval = speed;
-        }
+
         private void OnTimedEvent(object source, ElapsedEventArgs e)
         {
             elapsedTime += 1;
             DoTick?.Invoke(this, EventArgs.Empty);
         }
-        public double GetElapsedTime()
-        {
-            return elapsedTime;
-        }
+
+        public double GetElapsedTime() => elapsedTime;
     }
 }

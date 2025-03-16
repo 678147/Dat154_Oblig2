@@ -45,6 +45,7 @@ namespace SolarSystemApp
 
         private void DrawPlantes(Graphics g, double t)
         {
+            eventController.Start();
             System.Diagnostics.Debug.WriteLine("DrawPlantes");
 
             var selectedPlanet = solarSystem.Find(obj => obj.Name == SelectedObject);
@@ -91,6 +92,7 @@ namespace SolarSystemApp
 
         private void DrawZoomedPlanet(Graphics g, SpaceObject obj, double t)
         {
+            eventController.Stop();
             Brush color = new SolidBrush(Color.FromName(obj.GetColor()));
 
             double centerX = 960;
@@ -186,6 +188,7 @@ namespace SolarSystemApp
 
         private void DrawInfoSquare(Graphics g)
         {
+            System.Diagnostics.Debug.WriteLine("DrawInfoSquare");
             var selectedObject = solarSystem.Find(obj => obj.Name == SelectedObject);
             if (selectedObject != null)
             {

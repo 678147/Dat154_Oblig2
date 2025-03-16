@@ -15,6 +15,8 @@ namespace SolarSystemApp
             this.simControl = new SpaceSimContol(solarSystem, eventController);
             InitializeComponent();
             this.eventController.Start();
+            this.KeyPreview = true;
+            this.KeyDown += Form1_KeyDown;
         }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -98,10 +100,23 @@ namespace SolarSystemApp
             this.Controls.Add(this.simContol);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.checkBoxShowInfo);
-            this.Controls.Add(this.checkBoxShowLabels); // Ensure this line is present
+            this.Controls.Add(this.checkBoxShowLabels); 
             this.Name = "Form1";
             this.Text = "Solar System Simulator";
             this.ResumeLayout(false);
         }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Oemplus || e.KeyCode == Keys.Add)  
+            {
+                eventController.SetSpeed(true); 
+            }
+            else if (e.KeyCode == Keys.OemMinus || e.KeyCode == Keys.Subtract) 
+            {
+                eventController.SetSpeed(false); 
+            }
+        }
+
     }
 }
